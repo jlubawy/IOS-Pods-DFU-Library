@@ -26,6 +26,7 @@ internal class SecureDFUPeripheral : BaseCommonDFUPeripheral<SecureDFUExecutor, 
     
     /// A flag indicating whether setting alternative advertising name is enabled (SDK 14+) (true by default)
     let alternativeAdvertisingNameEnabled: Bool
+    var alternativeAdvertisingName: String?
     
     // MARK: - Peripheral API
     
@@ -42,6 +43,7 @@ internal class SecureDFUPeripheral : BaseCommonDFUPeripheral<SecureDFUExecutor, 
     
     override init(_ initiator: DFUServiceInitiator, _ logger: LoggerHelper) {
         self.alternativeAdvertisingNameEnabled = initiator.alternativeAdvertisingNameEnabled
+        self.alternativeAdvertisingName = initiator.alternativeAdvertisingName
         super.init(initiator, logger)
     }
     
@@ -73,7 +75,19 @@ internal class SecureDFUPeripheral : BaseCommonDFUPeripheral<SecureDFUExecutor, 
     func jumpToBootloader() {
         jumpingToBootloader = true
         newAddressExpected = dfuService!.newAddressExpected
-        dfuService!.jumpToBootloaderMode(withAlternativeAdvertisingName: alternativeAdvertisingNameEnabled,
+
+        var name: String?
+        if alternativeAdvertisingNameEnabled {
+            if let userSuppliedName = alternativeAdvertisingName {
+                // Use the user supplied name
+                name = userSuppliedName
+            } else {
+                // Generate a random 8-character long name
+                name = String(format: "Dfu%05d", arc4random_uniform(100000))
+            }
+        }
+
+        dfuService!.jumpToBootloaderMode(withAlternativeAdvertisingName: name,
             // onSuccess the device gets disconnected and centralManager(_:didDisconnectPeripheral:error) will be called
             onError: { (error, message) in
                 self.jumpingToBootloader = false

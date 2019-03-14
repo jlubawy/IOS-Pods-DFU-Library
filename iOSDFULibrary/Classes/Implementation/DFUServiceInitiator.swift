@@ -162,6 +162,7 @@ import CoreBluetooth
      For more information read: https://github.com/NordicSemiconductor/IOS-nRF-Connect/issues/16
      */
     @objc public var alternativeAdvertisingNameEnabled = true
+    @objc public var alternativeAdvertisingName: String?
     
     /**
      Set this flag to true to enable experimental buttonless feature in Secure DFU. When the 
